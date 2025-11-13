@@ -1,0 +1,10 @@
+{
+  "name": "real-time-crypto-sniping-bot-d4b62rk82vjpue6v7700",
+  "version": "1.0.0",
+  "type": "module",
+  "packageManager": "bun",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ]
+}
