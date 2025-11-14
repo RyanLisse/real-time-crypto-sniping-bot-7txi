@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+bun.lockb
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+backend/frontend/
+
+# Generated files
+*.gen.ts
+*.gen.js
+encore.gen/
+.encore/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Lock files and generated configs
+bun.lock
+*.lock
+
+# IDE
+.vscode/
+.idea/

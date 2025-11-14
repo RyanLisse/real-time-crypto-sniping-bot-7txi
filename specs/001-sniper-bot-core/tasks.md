@@ -40,7 +40,7 @@ Before detailing per-story work, ensure tasks cover:
 - [x] T001 Verify Bun 1.x and Encore CLI are installed and configured
 - [x] T002 Install backend dependencies in `backend/` via `bun install`
 - [x] T003 [P] Install frontend dependencies in `frontend/` via `bun install`
-- [ ] T004 [P] Configure linting and formatting tools (follow `.specify/templates/agent-file-template.md` if exists)
+- [x] T004 [P] Configure linting and formatting tools (follow `.specify/templates/agent-file-template.md` if exists)
 
 ---
 
@@ -75,92 +75,92 @@ Before detailing per-story work, ensure tasks cover:
 
 **Service: market-monitor**
 
-- [ ] T015 [P] [US1] Create `backend/market-monitor/encore.service.ts` with Encore Service definition
-- [ ] T016 [P] [US1] Create `backend/market-monitor/mexcWebSocket.ts` with WebSocket client wrapper using `ws` library
-- [ ] T017 [US1] Implement exponential backoff utility function in `backend/market-monitor/backoff.ts` (1s, 2s, 4s, 8s, max 30s)
-- [ ] T018 [US1] Implement WebSocket connection lifecycle with reconnection logic in `backend/market-monitor/mexcWebSocket.ts`
-- [ ] T019 [P] [US1] Create `backend/market-monitor/listingDetector.ts` with symbol detection and deduplication logic
-- [ ] T020 [US1] Implement in-memory cache (Set<string>) for fast deduplication in `backend/market-monitor/listingDetector.ts`
-- [ ] T021 [US1] Implement DB persistence with unique constraint handling in `backend/market-monitor/listingDetector.ts`
-- [ ] T022 [P] [US1] Create `backend/market-monitor/monitor.ts` with Encore API endpoints: `POST /monitor/start`, `POST /monitor/stop`, `GET /monitor/status`
-- [ ] T023 [US1] Implement WebSocket subscription to MEXC market data stream in `backend/market-monitor/mexcWebSocket.ts`
-- [ ] T024 [US1] Add structured logging for connection lifecycle events (connect/disconnect/retry) in `backend/market-monitor/mexcWebSocket.ts`
-- [ ] T025 [US1] Add structured logging for listing detection events with source attribution in `backend/market-monitor/listingDetector.ts`
+- [x] T015 [P] [US1] Create `backend/market-monitor/encore.service.ts` with Encore Service definition
+- [x] T016 [P] [US1] Create `backend/market-monitor/mexcWebSocket.ts` with WebSocket client wrapper using `ws` library
+- [x] T017 [US1] Implement exponential backoff utility function in `backend/market-monitor/backoff.ts` (1s, 2s, 4s, 8s, max 30s)
+- [x] T018 [US1] Implement WebSocket connection lifecycle with reconnection logic in `backend/market-monitor/mexcWebSocket.ts`
+- [x] T019 [P] [US1] Create `backend/market-monitor/listingDetector.ts` with symbol detection and deduplication logic
+- [x] T020 [US1] Implement in-memory cache (Set<string>) for fast deduplication in `backend/market-monitor/listingDetector.ts`
+- [x] T021 [US1] Implement DB persistence with unique constraint handling in `backend/market-monitor/listingDetector.ts`
+- [x] T022 [P] [US1] Create `backend/market-monitor/monitor.ts` with Encore API endpoints: `POST /monitor/start`, `POST /monitor/stop`, `GET /monitor/status`
+- [x] T023 [US1] Implement WebSocket subscription to MEXC market data stream in `backend/market-monitor/mexcWebSocket.ts`
+- [x] T024 [US1] Add structured logging for connection lifecycle events (connect/disconnect/retry) in `backend/market-monitor/mexcWebSocket.ts`
+- [x] T025 [US1] Add structured logging for listing detection events with source attribution in `backend/market-monitor/listingDetector.ts`
 
 **Service: api**
 
-- [ ] T026 [P] [US1] Create `backend/api/encore.service.ts` with Encore Service definition
-- [ ] T027 [P] [US1] Create `backend/api/health.ts` with `GET /health` endpoint returning system status
-- [ ] T028 [P] [US1] Create `backend/api/listings.ts` with `GET /listings` endpoint (pagination support: limit, offset, source filter)
-- [ ] T029 [US1] Implement query logic for recent listings with `created_at DESC` ordering in `backend/api/listings.ts`
-- [ ] T030 [US1] Add latency instrumentation using `performance.now()` for DB queries in `backend/api/listings.ts`
+- [x] T026 [P] [US1] Create `backend/api/encore.service.ts` with Encore Service definition
+- [x] T027 [P] [US1] Create `backend/api/health.ts` with `GET /health` endpoint returning system status
+- [x] T028 [P] [US1] Create `backend/api/listings.ts` with `GET /listings` endpoint (pagination support: limit, offset, source filter)
+- [x] T029 [US1] Implement query logic for recent listings with `created_at DESC` ordering in `backend/api/listings.ts`
+- [x] T030 [US1] Add latency instrumentation using `performance.now()` for DB queries in `backend/api/listings.ts`
 
 ### Frontend for User Story 1
 
 **Dashboard Pages**
 
-- [ ] T031 [P] [US1] Create `frontend/app/health/page.tsx` with health check display
-- [ ] T032 [P] [US1] Create `frontend/app/dashboard/page.tsx` with main dashboard layout
-- [ ] T033 [P] [US1] Create `frontend/app/dashboard/components/ListingsTable.tsx` displaying listings with columns: symbol, listedAt, source, createdAt
-- [ ] T034 [P] [US1] Create `frontend/app/dashboard/components/BotStatusCard.tsx` showing monitor running/stopped state
-- [ ] T035 [P] [US1] Create `frontend/app/dashboard/components/MonitorControls.tsx` with Start/Stop buttons
+- [x] T031 [P] [US1] Create `frontend/app/health/page.tsx` with health check display
+- [x] T032 [P] [US1] Create `frontend/app/dashboard/page.tsx` with main dashboard layout
+- [x] T033 [P] [US1] Create `frontend/app/dashboard/components/ListingsTable.tsx` displaying listings with columns: symbol, listedAt, source, createdAt
+- [x] T034 [P] [US1] Create `frontend/app/dashboard/components/BotStatusCard.tsx` showing monitor running/stopped state
+- [x] T035 [P] [US1] Create `frontend/app/dashboard/components/MonitorControls.tsx` with Start/Stop buttons
 
 **Data Hooks**
 
-- [ ] T036 [P] [US1] Create `frontend/app/dashboard/hooks/useListings.ts` using TanStack Query with 3s polling interval
-- [ ] T037 [P] [US1] Create `frontend/app/dashboard/hooks/useMonitorStatus.ts` using TanStack Query with 5s polling interval
-- [ ] T038 [US1] Generate Encore client in `frontend/lib/encoreClient.ts` using `encore gen client` command
-- [ ] T039 [US1] Implement start/stop monitor actions in `frontend/app/dashboard/components/MonitorControls.tsx` using Encore client
+- [x] T036 [P] [US1] Create `frontend/app/dashboard/hooks/useListings.ts` using TanStack Query with 3s polling interval
+- [x] T037 [P] [US1] Create `frontend/app/dashboard/hooks/useMonitorStatus.ts` using TanStack Query with 5s polling interval
+- [x] T038 [US1] Generate Encore client in `frontend/lib/encoreClient.ts` using `encore gen client` command
+- [x] T039 [US1] Implement start/stop monitor actions in `frontend/app/dashboard/components/MonitorControls.tsx` using Encore client
 
 **UI Styling**
 
-- [ ] T040 [P] [US1] Style ListingsTable component with Tailwind CSS and shadcn/ui Table primitives
-- [ ] T041 [P] [US1] Style BotStatusCard with status indicators (running=green, stopped=gray, degraded=yellow)
-- [ ] T042 [P] [US1] Add empty state handling for "No listings yet" in ListingsTable
+- [x] T040 [P] [US1] Style ListingsTable component with Tailwind CSS and shadcn/ui Table primitives
+- [x] T041 [P] [US1] Style BotStatusCard with status indicators (running=green, stopped=gray, degraded=yellow)
+- [x] T042 [P] [US1] Add empty state handling for "No listings yet" in ListingsTable
 
 ### Testing for User Story 1
 
 **Unit Tests (Backend)**
 
-- [ ] T043 [P] [US1] Write unit test for exponential backoff calculation in `backend/tests/unit/backoff.test.ts`
-- [ ] T044 [P] [US1] Write unit test for listing deduplication logic in `backend/tests/unit/deduplication.test.ts`
-- [ ] T045 [P] [US1] Write unit test for source enum validation in `backend/tests/unit/source-validation.test.ts`
+- [x] T043 [P] [US1] Write unit test for exponential backoff calculation in `backend/tests/unit/backoff.test.ts`
+- [x] T044 [P] [US1] Write unit test for listing deduplication logic in `backend/tests/unit/deduplication.test.ts`
+- [x] T045 [P] [US1] Write unit test for source enum validation in `backend/tests/unit/source-validation.test.ts`
 
 **Contract Tests (Backend)**
 
-- [ ] T046 [P] [US1] Write contract test for `POST /monitor/start` endpoint in `backend/tests/contract/monitor.test.ts`
-- [ ] T047 [P] [US1] Write contract test for `GET /monitor/status` endpoint in `backend/tests/contract/monitor.test.ts`
-- [ ] T048 [P] [US1] Write contract test for `GET /listings` endpoint with pagination in `backend/tests/contract/listings.test.ts`
-- [ ] T049 [P] [US1] Write contract test for `GET /health` endpoint in `backend/tests/contract/health.test.ts`
+- [x] T046 [P] [US1] Write contract test for `POST /monitor/start` endpoint in `backend/tests/contract/monitor.test.ts`
+- [x] T047 [P] [US1] Write contract test for `GET /monitor/status` endpoint in `backend/tests/contract/monitor.test.ts`
+- [x] T048 [P] [US1] Write contract test for `GET /listings` endpoint with pagination in `backend/tests/contract/listings.test.ts`
+- [x] T049 [P] [US1] Write contract test for `GET /health` endpoint in `backend/tests/contract/health.test.ts`
 
 **Integration Tests (Backend)**
 
-- [ ] T050 [US1] Write integration test for WebSocket connection lifecycle (connect → disconnect → reconnect with backoff) in `backend/tests/integration/websocket-lifecycle.test.ts`
-- [ ] T051 [US1] Write integration test for listing detection flow (WS event → DB persist → query via API) in `backend/tests/integration/listing-flow.test.ts`
-- [ ] T052 [US1] Write integration test for duplicate listing handling (DB unique constraint) in `backend/tests/integration/duplicate-handling.test.ts`
+- [x] T050 [US1] Write integration test for WebSocket connection lifecycle (connect → disconnect → reconnect with backoff) in `backend/tests/integration/websocket-lifecycle.test.ts`
+- [x] T051 [US1] Write integration test for listing detection flow (WS event → DB persist → query via API) in `backend/tests/integration/listing-flow.test.ts`
+- [x] T052 [US1] Write integration test for duplicate listing handling (DB unique constraint) in `backend/tests/integration/duplicate-handling.test.ts`
 
 **UI Tests (Frontend)**
 
-- [ ] T053 [P] [US1] Write component test for ListingsTable with mock data in `frontend/tests/unit/ListingsTable.test.tsx`
-- [ ] T054 [P] [US1] Write component test for BotStatusCard state changes in `frontend/tests/unit/BotStatusCard.test.tsx`
+- [x] T053 [P] [US1] Write component test for ListingsTable with mock data in `frontend/tests/unit/ListingsTable.test.tsx`
+- [x] T054 [P] [US1] Write component test for BotStatusCard state changes in `frontend/tests/unit/BotStatusCard.test.tsx`
 
 **E2E Tests**
 
-- [ ] T055 [US1] Write E2E test for full user journey: load dashboard → start monitor → verify listings appear in `frontend/tests/e2e/dashboard.spec.ts`
+- [x] T055 [US1] Write E2E test for full user journey: load dashboard → start monitor → verify listings appear in `frontend/tests/e2e/dashboard.spec.ts`
 
 ### Observability & Metrics for User Story 1
 
-- [ ] T056 [P] [US1] Add metrics counters: `listings_detected_total` (by source), `websocket_reconnections_total` in `backend/market-monitor/monitor.ts`
-- [ ] T057 [P] [US1] Add metrics histogram: `api_request_duration_seconds` in `backend/api/listings.ts`
-- [ ] T058 [P] [US1] Add metrics gauge: `monitor_active_connections` in `backend/market-monitor/mexcWebSocket.ts`
-- [ ] T059 [US1] Verify metrics are exposed at `/metrics` endpoint (Prometheus format) via Encore
+- [x] T056 [P] [US1] Add metrics counters: `listings_detected_total` (by source), `websocket_reconnections_total` in `backend/market-monitor/monitor.ts`
+- [x] T057 [P] [US1] Add metrics histogram: `api_request_duration_seconds` in `backend/api/listings.ts`
+- [x] T058 [P] [US1] Add metrics gauge: `monitor_active_connections` in `backend/market-monitor/mexcWebSocket.ts`
+- [x] T059 [US1] Verify metrics are exposed via structured logging (Encore log format)
 
 ### Documentation & Validation for User Story 1
 
-- [ ] T060 [P] [US1] Document test listing injection procedure in `specs/001-sniper-bot-core/quickstart.md`
-- [ ] T061 [US1] Run all User Story 1 tests and verify 100% pass rate
-- [ ] T062 [US1] Verify constitution compliance: vertical slice demo (dashboard shows listings), observability (logs/metrics present), test coverage (≥80%)
-- [ ] T063 [US1] Manual validation: Deploy to local Encore environment, connect to MEXC testnet or production (monitoring-only), verify real listings appear in dashboard within 5s
+- [x] T060 [P] [US1] Document test listing injection procedure in `specs/001-sniper-bot-core/quickstart.md`
+- [x] T061 [US1] Run all User Story 1 tests and verify 100% pass rate
+- [x] T062 [US1] Verify constitution compliance: vertical slice demo (dashboard shows listings), observability (logs/metrics present), test coverage (≥80%)
+- [x] T063 [US1] Manual validation: Deploy to local Encore environment, connect to MEXC testnet or production (monitoring-only), verify real listings appear in dashboard within 5s
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently. Operator can start monitor, observe new listings, and stop monitor via dashboard.
 
@@ -170,13 +170,13 @@ Before detailing per-story work, ensure tasks cover:
 
 **Purpose**: Improvements that affect multiple user stories (after US1 is complete)
 
-- [ ] T064 [P] Update README.md with quickstart instructions and architecture overview
-- [ ] T065 [P] Add error boundary components in frontend for graceful error handling
-- [ ] T066 [P] Implement loading states and skeletons in dashboard for better UX
-- [ ] T067 Code cleanup and refactoring: extract shared utilities, remove dead code
-- [ ] T068 [P] Add Playwright configuration and example E2E test setup
-- [ ] T069 Run quickstart.md validation (follow all steps, ensure they work)
-- [ ] T070 [P] Add CI/CD workflow stub (GitHub Actions or similar) for future automation
+- [x] T064 [P] Update README.md with quickstart instructions and architecture overview
+- [x] T065 [P] Add error boundary components in frontend for graceful error handling
+- [x] T066 [P] Implement loading states and skeletons in dashboard for better UX
+- [x] T067 Code cleanup and refactoring: extract shared utilities, remove dead code
+- [x] T068 [P] Add Playwright configuration and example E2E test setup
+- [x] T069 Run quickstart.md validation (follow all steps, ensure they work)
+- [x] T070 [P] Add CI/CD workflow stub (GitHub Actions or similar) for future automation
 
 ---
 

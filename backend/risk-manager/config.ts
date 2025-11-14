@@ -14,7 +14,7 @@ export interface TradingConfig {
 export const getConfig = api<void, TradingConfig>(
   { method: "GET", path: "/config", expose: true },
   async () => {
-    const config = await db.queryRow<{
+    const config = await BotDB.queryRow<{
       max_position_size: number;
       max_trade_amount: number;
       risk_per_trade: number;
@@ -88,13 +88,13 @@ export const updateConfig = api<UpdateConfigRequest, TradingConfig>(
     }
 
     if (updates.length > 0) {
-      await db.rawExec(
+      await BotDB.rawExec(
         `UPDATE trade_config SET ${updates.join(", ")}, updated_at = NOW() WHERE id = 1`,
         ...values
       );
     }
 
-    const config = await db.queryRow<{
+    const config = await BotDB.queryRow<{
       max_position_size: number;
       max_trade_amount: number;
       risk_per_trade: number;

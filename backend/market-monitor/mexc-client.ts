@@ -5,7 +5,6 @@ import type { MEXCTicker, MEXCSymbolInfo, MarketSnapshot } from "./types";
 import { newListingTopic, marketDataTopic } from "./pubsub";
 import { BotDB } from "../db/db";
 
-const db = BotDB;
 import { Effect, Schedule, pipe } from "effect";
 
 const mexcApiKey = secret("MEXCApiKey");
@@ -27,7 +26,7 @@ class MEXCClient {
   }
 
   private async loadKnownSymbols() {
-    const listings = await db.queryAll<{ symbol: string }>`
+    const listings = await BotDB.queryAll<{ symbol: string }>`
       SELECT symbol FROM listings
     `;
     listings.forEach(l => this.knownSymbols.add(l.symbol));
@@ -116,7 +115,7 @@ class MEXCClient {
       timestamp: new Date(),
     };
 
-    await db.exec`
+    await BotDB.exec`
       INSERT INTO market_data (symbol, price, volume, bid_price, ask_price, timestamp, source)
       VALUES (${snapshot.symbol}, ${snapshot.price}, ${snapshot.volume}, ${snapshot.bidPrice}, ${snapshot.askPrice}, ${snapshot.timestamp}, 'mexc')
     `;
@@ -145,7 +144,7 @@ class MEXCClient {
         metadata: { status: symbolInfo.status },
       };
 
-      await db.exec`
+      await BotDB.exec`
         INSERT INTO listings (symbol, base_currency, quote_currency, first_price, listing_source, metadata)
         VALUES (${newListing.symbol}, ${newListing.baseCurrency}, ${newListing.quoteCurrency}, ${newListing.firstPrice}, ${newListing.listingSource}, ${JSON.stringify(newListing.metadata)})
         ON CONFLICT (symbol) DO NOTHING

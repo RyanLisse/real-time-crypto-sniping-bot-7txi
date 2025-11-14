@@ -2,7 +2,6 @@ import { api } from "encore.dev/api";
 import { Query } from "encore.dev/api";
 import { BotDB } from "../db/db";
 
-const db = BotDB;
 
 export interface Trade {
   id: number;
@@ -54,7 +53,7 @@ export const listTrades = api<ListTradesParams, ListTradesResponse>(
     queryParams.push(limit);
     query += ` ORDER BY created_at DESC LIMIT $${queryParams.length}`;
 
-    const trades = await db.rawQueryAll<Trade>(query, ...queryParams);
+    const trades = await BotDB.rawQueryAll<Trade>(query, ...queryParams);
 
     return { trades };
   }

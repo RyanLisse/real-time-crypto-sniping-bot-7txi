@@ -1,16 +1,19 @@
 import type { ReactNode } from "react";
 import "../app/globals.css";
+import { Providers } from "./providers";
 
 export const metadata = {
-  title: "Crypto Sniper Bot",
-  description: "Monitor the Encore API health status",
+  title: "MEXC Sniper Bot",
+  description: "Monitor new MEXC listings in near real-time",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className="app-body">
-        <div className="app-shell">{children}</div>
+        <Providers>
+          <div className="app-shell">{children}</div>
+        </Providers>
       </body>
     </html>
   );

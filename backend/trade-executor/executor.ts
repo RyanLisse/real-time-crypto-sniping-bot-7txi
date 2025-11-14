@@ -5,7 +5,6 @@ import { newListingTopic } from "../market-monitor/pubsub";
 import { mexcTradingClient } from "./mexc-trading";
 import { BotDB } from "../db/db";
 
-const db = BotDB;
 import type { TradeRequest, TradeResponse } from "./types";
 import type { NewListing } from "../market-monitor/types";
 import { Effect, pipe } from "effect";
@@ -16,7 +15,7 @@ export const executeTrade = api<TradeRequest, TradeResponse>(
     const startTime = Date.now();
 
     try {
-      const config = await db.queryRow<{
+      const config = await BotDB.queryRow<{
         max_trade_amount: number;
         max_slippage_pct: number;
         enabled: boolean;
@@ -45,7 +44,7 @@ export const executeTrade = api<TradeRequest, TradeResponse>(
 
       const latencyMs = Date.now() - startTime;
 
-      const result = await db.queryRow<{ id: number }>`
+      const result = await BotDB.queryRow<{ id: number }>`
         INSERT INTO trades (
           listing_id, symbol, side, order_type, quantity, price, 
           total_value, status, order_id, executed_at, latency_ms
@@ -76,7 +75,7 @@ export const executeTrade = api<TradeRequest, TradeResponse>(
       const latencyMs = Date.now() - startTime;
       const errorMessage = error instanceof Error ? error.message : String(error);
 
-      await db.exec`
+      await BotDB.exec`
         INSERT INTO trades (
           listing_id, symbol, side, order_type, quantity, price, 
           total_value, status, latency_ms, error_message
@@ -102,7 +101,7 @@ export const executeTrade = api<TradeRequest, TradeResponse>(
 new Subscription(newListingTopic, "auto-trade-new-listings", {
   handler: async (listing: NewListing) => {
     try {
-      const config = await db.queryRow<{
+      const config = await BotDB.queryRow<{
         max_trade_amount: number;
         enabled: boolean;
       }>`
@@ -114,7 +113,7 @@ new Subscription(newListingTopic, "auto-trade-new-listings", {
         return;
       }
 
-      const listingRecord = await db.queryRow<{ id: number }>`
+      const listingRecord = await BotDB.queryRow<{ id: number }>`
         SELECT id FROM listings WHERE symbol = ${listing.symbol}
       `;
 

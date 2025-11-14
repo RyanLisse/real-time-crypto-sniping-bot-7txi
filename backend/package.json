@@ -4,7 +4,10 @@
   "type": "module",
   "packageManager": "bun",
   "scripts": {
-    "build": "cd ../frontend && bun install && npx vite build --outDir=../backend/frontend/dist"
+    "build": "cd ../frontend && bun install && npx vite build --outDir=../backend/frontend/dist",
+    "test": "bun test tests/",
+    "test:unit": "bun test tests/unit/",
+    "test:watch": "bun test --watch tests/"
   },
   "dependencies": {
     "effect": "^3.19.3",
@@ -12,6 +15,8 @@
     "ws": "^8.18.1"
   },
   "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@types/ws": "^8.18.1",
     "typescript": "^5.8.3"
   }
 }

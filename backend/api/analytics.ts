@@ -1,7 +1,6 @@
 import { api } from "encore.dev/api";
 import { BotDB } from "../db/db";
 
-const db = BotDB;
 
 export interface PerformanceMetrics {
   avgExecutionLatency: number;
@@ -15,7 +14,7 @@ export interface PerformanceMetrics {
 export const getPerformanceMetrics = api<void, PerformanceMetrics>(
   { method: "GET", path: "/analytics/performance", expose: true },
   async () => {
-    const latencyStats = await db.queryRow<{
+    const latencyStats = await BotDB.queryRow<{
       avg: number;
       p95: number;
       p99: number;
@@ -28,7 +27,7 @@ export const getPerformanceMetrics = api<void, PerformanceMetrics>(
       WHERE status = 'executed' AND created_at > NOW() - INTERVAL '24 hours'
     `;
 
-    const tradeStats = await db.queryRow<{
+    const tradeStats = await BotDB.queryRow<{
       total: number;
       executed: number;
     }>`
@@ -39,14 +38,14 @@ export const getPerformanceMetrics = api<void, PerformanceMetrics>(
       WHERE created_at > NOW() - INTERVAL '24 hours'
     `;
 
-    const tradesPerHour = await db.queryRow<{ rate: number }>`
+    const tradesPerHour = await BotDB.queryRow<{ rate: number }>`
       SELECT 
         COUNT(*)::int / GREATEST(EXTRACT(EPOCH FROM (MAX(created_at) - MIN(created_at))) / 3600, 1) as rate
       FROM trades
       WHERE created_at > NOW() - INTERVAL '24 hours'
     `;
 
-    const listingsPerHour = await db.queryRow<{ rate: number }>`
+    const listingsPerHour = await BotDB.queryRow<{ rate: number }>`
       SELECT 
         COUNT(*)::int / GREATEST(EXTRACT(EPOCH FROM (MAX(detected_at) - MIN(detected_at))) / 3600, 1) as rate
       FROM listings

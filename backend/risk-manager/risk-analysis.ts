@@ -2,7 +2,6 @@ import { api } from "encore.dev/api";
 import log from "encore.dev/log";
 import { BotDB } from "../db/db";
 
-const db = BotDB;
 
 export interface RiskMetrics {
   totalExposure: number;
@@ -17,19 +16,19 @@ export interface RiskMetrics {
 export const getRiskMetrics = api<void, RiskMetrics>(
   { method: "GET", path: "/risk/metrics", expose: true },
   async () => {
-    const totalExposureResult = await db.queryRow<{ total: number }>`
+    const totalExposureResult = await BotDB.queryRow<{ total: number }>`
       SELECT COALESCE(SUM(total_value), 0) as total
       FROM trades
       WHERE status = 'executed' AND side = 'buy'
     `;
 
-    const activePositionsResult = await db.queryRow<{ count: number }>`
+    const activePositionsResult = await BotDB.queryRow<{ count: number }>`
       SELECT COUNT(DISTINCT symbol)::int as count
       FROM trades
       WHERE status = 'executed' AND side = 'buy'
     `;
 
-    const tradeStatsResult = await db.queryRow<{
+    const tradeStatsResult = await BotDB.queryRow<{
       total: number;
       executed: number;
       failed: number;
@@ -74,7 +73,7 @@ export interface ValidateTradeResponse {
 export const validateTrade = api<ValidateTradeRequest, ValidateTradeResponse>(
   { method: "POST", path: "/risk/validate", expose: true },
   async (req) => {
-    const config = await db.queryRow<{
+    const config = await BotDB.queryRow<{
       max_position_size: number;
       max_trade_amount: number;
       risk_per_trade: number;
@@ -100,7 +99,7 @@ export const validateTrade = api<ValidateTradeRequest, ValidateTradeResponse>(
       };
     }
 
-    const currentExposure = await db.queryRow<{ total: number }>`
+    const currentExposure = await BotDB.queryRow<{ total: number }>`
       SELECT COALESCE(SUM(total_value), 0) as total
       FROM trades
       WHERE status = 'executed' AND side = 'buy'
