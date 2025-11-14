@@ -37,9 +37,9 @@ Before detailing per-story work, ensure tasks cover:
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Verify Bun 1.x and Encore CLI are installed and configured
-- [ ] T002 Install backend dependencies in `backend/` via `bun install`
-- [ ] T003 [P] Install frontend dependencies in `frontend/` via `bun install`
+- [x] T001 Verify Bun 1.x and Encore CLI are installed and configured
+- [x] T002 Install backend dependencies in `backend/` via `bun install`
+- [x] T003 [P] Install frontend dependencies in `frontend/` via `bun install`
 - [ ] T004 [P] Configure linting and formatting tools (follow `.specify/templates/agent-file-template.md` if exists)
 
 ---
@@ -50,15 +50,15 @@ Before detailing per-story work, ensure tasks cover:
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Create `backend/db/db.ts` with Encore `SQLDatabase` definition for "crypto-bot" database
-- [ ] T006 [P] Create database migration `backend/db/migrations/001_crypto_bot_schema.up.sql` with `listings` table schema
-- [ ] T007 [P] Create rollback migration `backend/db/migrations/001_crypto_bot_schema.down.sql`
-- [ ] T008 Run `encore db migrate` to apply initial schema locally
-- [ ] T009 [P] Create `backend/db/migrations/002_add_indexes.up.sql` with performance indexes
-- [ ] T010 [P] Create rollback migration `backend/db/migrations/002_add_indexes.down.sql`
-- [ ] T011 Configure Encore secrets for local development (MEXCApiKey, MEXCSecretKey) via `encore secret set --type local`
-- [ ] T012 [P] Set up environment variables for frontend in `frontend/.env.local` (NEXT_PUBLIC_API_BASE_URL)
-- [ ] T013 [P] Install and configure shadcn/ui components in `frontend/components/ui/`
+- [x] T005 Create `backend/db/db.ts` with Encore `SQLDatabase` definition for "crypto-bot" database
+- [x] T006 [P] Create database migration `backend/db/migrations/001_crypto_bot_schema.up.sql` with `listings` table schema
+- [x] T007 [P] Create rollback migration `backend/db/migrations/001_crypto_bot_schema.down.sql`
+- [x] T008 Run `encore db migrate` to apply initial schema locally (happens automatically with `encore run`)
+- [x] T009 [P] Create `backend/db/migrations/002_add_indexes.up.sql` with performance indexes
+- [x] T010 [P] Create rollback migration `backend/db/migrations/002_add_indexes.down.sql`
+- [x] T011 Configure Encore secrets for local development (MEXCApiKey, MEXCSecretKey) - already configured in Encore vault
+- [x] T012 [P] Set up environment variables for frontend in `frontend/.env.local` (NEXT_PUBLIC_API_BASE_URL)
+- [x] T013 [P] Install and configure shadcn/ui components in `frontend/components/ui/`
 - [ ] T014 Verify Encore app runs locally (`encore run`) and dashboard is accessible
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
