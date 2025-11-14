@@ -1,123 +1,102 @@
 import { api } from "encore.dev/api";
-import db from "../external_dbs/neondb/db";
+import { BotDB } from "../db/db";
 
+/**
+ * Trade configuration matching User Story 2 spec
+ */
 export interface TradingConfig {
-  maxPositionSize: number;
-  maxTradeAmount: number;
-  riskPerTrade: number;
-  stopLossPct: number;
-  takeProfitPct: number;
-  maxSlippagePct: number;
-  enabled: boolean;
+  maxTradeUsdt: number;
+  maxPositionUsdt: number;
+  autoTrade: boolean;
+  highValueThresholdUsdt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const getConfig = api<void, TradingConfig>(
-  { method: "GET", path: "/config", expose: true },
+  { method: "GET", path: "/config", expose: true, auth: false },
   async () => {
     const config = await BotDB.queryRow<{
-      max_position_size: number;
-      max_trade_amount: number;
-      risk_per_trade: number;
-      stop_loss_pct: number;
-      take_profit_pct: number;
-      max_slippage_pct: number;
-      enabled: boolean;
+      max_trade_usdt: number;
+      max_position_usdt: number;
+      auto_trade: boolean;
+      high_value_threshold_usdt: number;
+      created_at: Date;
+      updated_at: Date;
     }>`
-      SELECT * FROM trade_config WHERE id = 1
+      SELECT max_trade_usdt, max_position_usdt, auto_trade, 
+             high_value_threshold_usdt, created_at, updated_at 
+      FROM trade_config WHERE id = 1
     `;
 
     if (!config) {
-      throw new Error("Config not found");
+      throw new Error("Config not found - run database migrations");
     }
 
     return {
-      maxPositionSize: config.max_position_size,
-      maxTradeAmount: config.max_trade_amount,
-      riskPerTrade: config.risk_per_trade,
-      stopLossPct: config.stop_loss_pct,
-      takeProfitPct: config.take_profit_pct,
-      maxSlippagePct: config.max_slippage_pct,
-      enabled: config.enabled,
+      maxTradeUsdt: config.max_trade_usdt,
+      maxPositionUsdt: config.max_position_usdt,
+      autoTrade: config.auto_trade,
+      highValueThresholdUsdt: config.high_value_threshold_usdt,
+      createdAt: config.created_at,
+      updatedAt: config.updated_at,
     };
   }
 );
 
+/**
+ * Update configuration request
+ * All fields optional - only provided fields are updated
+ */
 export interface UpdateConfigRequest {
-  maxPositionSize?: number;
-  maxTradeAmount?: number;
-  riskPerTrade?: number;
-  stopLossPct?: number;
-  takeProfitPct?: number;
-  maxSlippagePct?: number;
-  enabled?: boolean;
+  maxTradeUsdt?: number;
+  maxPositionUsdt?: number;
+  autoTrade?: boolean;
+  highValueThresholdUsdt?: number;
 }
 
 export const updateConfig = api<UpdateConfigRequest, TradingConfig>(
-  { method: "PUT", path: "/config", expose: true },
+  { method: "PUT", path: "/config", expose: true, auth: false },
   async (req) => {
-    const updates: string[] = [];
-    const values: (string | number | boolean)[] = [];
+    // Validate constraints before update
+    if (req.maxTradeUsdt !== undefined && req.maxTradeUsdt <= 0) {
+      throw new Error("max_trade_usdt must be positive");
+    }
+    
+    if (req.maxPositionUsdt !== undefined && req.maxTradeUsdt !== undefined) {
+      if (req.maxPositionUsdt < req.maxTradeUsdt) {
+        throw new Error("max_position_usdt must be >= max_trade_usdt");
+      }
+    }
 
-    if (req.maxPositionSize !== undefined) {
-      values.push(req.maxPositionSize);
-      updates.push(`max_position_size = $${values.length}`);
+    // Build dynamic SQL for only provided fields
+    const updates: string[] = [];
+    const params: any[] = [];
+
+    if (req.maxTradeUsdt !== undefined) {
+      params.push(req.maxTradeUsdt);
+      updates.push(`max_trade_usdt = $${params.length}`);
     }
-    if (req.maxTradeAmount !== undefined) {
-      values.push(req.maxTradeAmount);
-      updates.push(`max_trade_amount = $${values.length}`);
+    if (req.maxPositionUsdt !== undefined) {
+      params.push(req.maxPositionUsdt);
+      updates.push(`max_position_usdt = $${params.length}`);
     }
-    if (req.riskPerTrade !== undefined) {
-      values.push(req.riskPerTrade);
-      updates.push(`risk_per_trade = $${values.length}`);
+    if (req.autoTrade !== undefined) {
+      params.push(req.autoTrade);
+      updates.push(`auto_trade = $${params.length}`);
     }
-    if (req.stopLossPct !== undefined) {
-      values.push(req.stopLossPct);
-      updates.push(`stop_loss_pct = $${values.length}`);
-    }
-    if (req.takeProfitPct !== undefined) {
-      values.push(req.takeProfitPct);
-      updates.push(`take_profit_pct = $${values.length}`);
-    }
-    if (req.maxSlippagePct !== undefined) {
-      values.push(req.maxSlippagePct);
-      updates.push(`max_slippage_pct = $${values.length}`);
-    }
-    if (req.enabled !== undefined) {
-      values.push(req.enabled);
-      updates.push(`enabled = $${values.length}`);
+    if (req.highValueThresholdUsdt !== undefined) {
+      params.push(req.highValueThresholdUsdt);
+      updates.push(`high_value_threshold_usdt = $${params.length}`);
     }
 
     if (updates.length > 0) {
-      await BotDB.rawExec(
-        `UPDATE trade_config SET ${updates.join(", ")}, updated_at = NOW() WHERE id = 1`,
-        ...values
-      );
+      // Note: Using template literals for dynamic SQL with validated inputs
+      const sql = `UPDATE trade_config SET ${updates.join(", ")}, updated_at = NOW() WHERE id = 1`;
+      await BotDB.rawExec(sql, ...params);
     }
 
-    const config = await BotDB.queryRow<{
-      max_position_size: number;
-      max_trade_amount: number;
-      risk_per_trade: number;
-      stop_loss_pct: number;
-      take_profit_pct: number;
-      max_slippage_pct: number;
-      enabled: boolean;
-    }>`
-      SELECT * FROM trade_config WHERE id = 1
-    `;
-
-    if (!config) {
-      throw new Error("Config not found");
-    }
-
-    return {
-      maxPositionSize: config.max_position_size,
-      maxTradeAmount: config.max_trade_amount,
-      riskPerTrade: config.risk_per_trade,
-      stopLossPct: config.stop_loss_pct,
-      takeProfitPct: config.take_profit_pct,
-      maxSlippagePct: config.max_slippage_pct,
-      enabled: config.enabled,
-    };
+    // Return updated config
+    return getConfig();
   }
 );

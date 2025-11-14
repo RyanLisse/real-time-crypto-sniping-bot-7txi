@@ -1,142 +1,153 @@
-import { api, APIError } from "encore.dev/api";
-import { Subscription } from "encore.dev/pubsub";
+import { api } from "encore.dev/api";
 import log from "encore.dev/log";
-import { newListingTopic } from "../market-monitor/pubsub";
-import { mexcTradingClient } from "./mexc-trading";
 import { BotDB } from "../db/db";
-
+import { checkTradeRisk } from "./risk-check";
 import type { TradeRequest, TradeResponse } from "./types";
-import type { NewListing } from "../market-monitor/types";
-import { Effect, pipe } from "effect";
 
+/**
+ * Execute a trade with risk checks and dry-run/live mode support
+ * User Story 2: Safe Auto-Trade Sniping
+ */
 export const executeTrade = api<TradeRequest, TradeResponse>(
   { method: "POST", path: "/trade/execute", expose: true, auth: false },
   async (req) => {
-    const startTime = Date.now();
+    const startTime = performance.now();
 
     try {
-      const config = await BotDB.queryRow<{
-        max_trade_amount: number;
-        max_slippage_pct: number;
-        enabled: boolean;
-      }>`
-        SELECT max_trade_amount, max_slippage_pct, enabled FROM trade_config WHERE id = 1
+      // Step 1: Risk check
+      const riskCheck = await checkTradeRisk({
+        symbol: req.symbol,
+        quoteQty: req.quoteQty,
+      });
+
+      if (!riskCheck.approved) {
+        const latencyMs = Math.round(performance.now() - startTime);
+        
+        // Record rejected trade
+        const result = await BotDB.queryRow<{ id: number }>`
+          INSERT INTO trades (
+            symbol, side, quote_qty, latency_ms, mode, status, error_reason
+          )
+          VALUES (
+            ${req.symbol}, ${req.side.toUpperCase()}, ${req.quoteQty}, 
+            ${latencyMs}, 'dry-run', 'rejected', ${riskCheck.reason || 'risk_check_failed'}
+          )
+          RETURNING id
+        `;
+
+        log.info("Trade rejected by risk check", {
+          metric: "trade_rejected_total",
+          tradeId: result?.id,
+          symbol: req.symbol,
+          reason: riskCheck.reason,
+          latencyMs,
+        });
+
+        return {
+          tradeId: result?.id || 0,
+          status: "rejected",
+          mode: "dry-run",
+          latencyMs,
+          errorReason: riskCheck.reason,
+        };
+      }
+
+      // Step 2: Determine mode (dry-run or live)
+      const config = await BotDB.queryRow<{ auto_trade: boolean }>`
+        SELECT auto_trade FROM trade_config WHERE id = 1
       `;
 
-      if (!config?.enabled) {
-        throw APIError.failedPrecondition("Trading is disabled");
+      const mode = config?.auto_trade ? "live" : "dry-run";
+
+      if (mode === "dry-run") {
+        // Dry-run: simulate trade without exchange call
+        const latencyMs = Math.round(performance.now() - startTime);
+        
+        const result = await BotDB.queryRow<{ id: number }>`
+          INSERT INTO trades (
+            symbol, side, quote_qty, latency_ms, mode, status
+          )
+          VALUES (
+            ${req.symbol}, ${req.side.toUpperCase()}, ${req.quoteQty},
+            ${latencyMs}, 'dry-run', 'filled'
+          )
+          RETURNING id
+        `;
+
+        log.info("Trade executed (dry-run)", {
+          metric: "trade_dry_run_total",
+          tradeId: result?.id,
+          symbol: req.symbol,
+          quoteQty: req.quoteQty,
+          latencyMs,
+        });
+
+        return {
+          tradeId: result?.id || 0,
+          status: "filled",
+          mode: "dry-run",
+          latencyMs,
+        };
       }
 
-      if (req.quantity * (req.price || 0) > config.max_trade_amount) {
-        throw APIError.invalidArgument("Trade amount exceeds maximum");
-      }
-
-      const mexcSide = req.side === "buy" ? "BUY" : "SELL";
-      const mexcType = req.orderType === "market" ? "MARKET" : "LIMIT";
-
-      const order = await mexcTradingClient.placeOrder(
-        req.symbol,
-        mexcSide,
-        mexcType,
-        req.quantity,
-        req.price
-      );
-
-      const latencyMs = Date.now() - startTime;
-
+      // Step 3: Live execution (placeholder - MEXC client integration needed)
+      // TODO: Integrate with mexcTradingClient.placeOrder()
+      const latencyMs = Math.round(performance.now() - startTime);
+      
+      log.warn("Live trading not yet implemented - executing as dry-run", { symbol: req.symbol });
+      
       const result = await BotDB.queryRow<{ id: number }>`
         INSERT INTO trades (
-          listing_id, symbol, side, order_type, quantity, price, 
-          total_value, status, order_id, executed_at, latency_ms
+          symbol, side, quote_qty, latency_ms, mode, status, error_reason
         )
         VALUES (
-          ${req.listingId}, ${req.symbol}, ${req.side}, ${req.orderType},
-          ${req.quantity}, ${parseFloat(order.price)}, 
-          ${req.quantity * parseFloat(order.price)}, 'executed', 
-          ${order.orderId}, NOW(), ${latencyMs}
+          ${req.symbol}, ${req.side.toUpperCase()}, ${req.quoteQty},
+          ${latencyMs}, 'dry-run', 'filled', 'live_trading_not_implemented'
         )
         RETURNING id
       `;
 
-      if (latencyMs > 100) {
-        log.warn(`High execution latency: ${latencyMs}ms for ${req.symbol}`);
-      }
-
-      log.info(`Trade executed: ${req.symbol} ${req.side} ${req.quantity} @ ${order.price} (${latencyMs}ms)`);
-
       return {
-        tradeId: result!.id,
-        orderId: order.orderId,
-        status: "executed",
-        executedPrice: parseFloat(order.price),
+        tradeId: result?.id || 0,
+        status: "filled",
+        mode: "dry-run",
         latencyMs,
       };
     } catch (error) {
-      const latencyMs = Date.now() - startTime;
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const latencyMs = Math.round(performance.now() - startTime);
+      const errorReason = error instanceof Error ? error.message : String(error);
 
-      await BotDB.exec`
+      // Record failed trade
+      const result = await BotDB.queryRow<{ id: number }>`
         INSERT INTO trades (
-          listing_id, symbol, side, order_type, quantity, price, 
-          total_value, status, latency_ms, error_message
+          symbol, side, quote_qty, latency_ms, mode, status, error_reason
         )
         VALUES (
-          ${req.listingId}, ${req.symbol}, ${req.side}, ${req.orderType},
-          ${req.quantity}, ${req.price || 0}, 0, 'failed', ${latencyMs}, ${errorMessage}
+          ${req.symbol}, ${req.side.toUpperCase()}, ${req.quoteQty},
+          ${latencyMs}, 'dry-run', 'failed', ${errorReason}
         )
+        RETURNING id
       `;
 
-      log.error(`Trade execution failed: ${req.symbol}`, error);
+      log.error("Trade execution failed", {
+        metric: "trade_failed_total",
+        tradeId: result?.id,
+        symbol: req.symbol,
+        error,
+        latencyMs,
+      });
 
       return {
-        tradeId: 0,
+        tradeId: result?.id || 0,
         status: "failed",
+        mode: "dry-run",
         latencyMs,
-        errorMessage,
+        errorReason,
       };
     }
   }
 );
 
-new Subscription(newListingTopic, "auto-trade-new-listings", {
-  handler: async (listing: NewListing) => {
-    try {
-      const config = await BotDB.queryRow<{
-        max_trade_amount: number;
-        enabled: boolean;
-      }>`
-        SELECT max_trade_amount, enabled FROM trade_config WHERE id = 1
-      `;
-
-      if (!config?.enabled) {
-        log.info("Auto-trading disabled, skipping listing:", listing.symbol);
-        return;
-      }
-
-      const listingRecord = await BotDB.queryRow<{ id: number }>`
-        SELECT id FROM listings WHERE symbol = ${listing.symbol}
-      `;
-
-      if (!listingRecord) {
-        log.error("Listing not found in database:", listing.symbol);
-        return;
-      }
-
-      const tradeQuantity = config.max_trade_amount / (listing.firstPrice || 1);
-
-      log.info(`Auto-trading new listing: ${listing.symbol} qty=${tradeQuantity}`);
-
-      const tradeReq: TradeRequest = {
-        symbol: listing.symbol,
-        side: "buy",
-        orderType: "market",
-        quantity: tradeQuantity,
-        listingId: listingRecord.id,
-      };
-      
-      await executeTrade(tradeReq);
-    } catch (error) {
-      log.error(`Failed to auto-trade listing ${listing.symbol}:`, error);
-    }
-  },
-});
+// TODO: Implement PubSub subscription for auto-trading new listings
+// This will be added after MEXC client is fully implemented
+// See User Story 2 acceptance scenarios for auto-trade flow
