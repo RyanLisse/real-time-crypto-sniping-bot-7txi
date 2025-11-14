@@ -1,6 +1,8 @@
 import { api } from "encore.dev/api";
 import log from "encore.dev/log";
-import db from "../external_dbs/neondb/db";
+import { BotDB } from "../db/db";
+
+const db = BotDB;
 
 export interface RiskMetrics {
   totalExposure: number;

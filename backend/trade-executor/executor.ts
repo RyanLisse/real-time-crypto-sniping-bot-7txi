@@ -3,7 +3,9 @@ import { Subscription } from "encore.dev/pubsub";
 import log from "encore.dev/log";
 import { newListingTopic } from "../market-monitor/pubsub";
 import { mexcTradingClient } from "./mexc-trading";
-import db from "../external_dbs/neondb/db";
+import { BotDB } from "../db/db";
+
+const db = BotDB;
 import type { TradeRequest, TradeResponse } from "./types";
 import type { NewListing } from "../market-monitor/types";
 import { Effect, pipe } from "effect";

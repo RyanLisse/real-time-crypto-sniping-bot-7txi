@@ -3,7 +3,9 @@ import log from "encore.dev/log";
 import WebSocket from "ws";
 import type { MEXCTicker, MEXCSymbolInfo, MarketSnapshot } from "./types";
 import { newListingTopic, marketDataTopic } from "./pubsub";
-import db from "../external_dbs/neondb/db";
+import { BotDB } from "../db/db";
+
+const db = BotDB;
 import { Effect, Schedule, pipe } from "effect";
 
 const mexcApiKey = secret("MEXCApiKey");

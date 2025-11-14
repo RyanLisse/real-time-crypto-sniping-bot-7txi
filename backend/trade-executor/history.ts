@@ -1,6 +1,8 @@
 import { api } from "encore.dev/api";
 import { Query } from "encore.dev/api";
-import db from "../external_dbs/neondb/db";
+import { BotDB } from "../db/db";
+
+const db = BotDB;
 
 export interface Trade {
   id: number;

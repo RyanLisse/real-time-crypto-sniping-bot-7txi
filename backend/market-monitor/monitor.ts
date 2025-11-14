@@ -1,7 +1,9 @@
 import { api } from "encore.dev/api";
 import log from "encore.dev/log";
 import { mexcClient } from "./mexc-client";
-import db from "../external_dbs/neondb/db";
+import { BotDB } from "../db/db";
+
+const db = BotDB;
 
 let isMonitoring = false;
 
