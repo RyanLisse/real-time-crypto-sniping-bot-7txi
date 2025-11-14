@@ -59,9 +59,9 @@ Before detailing per-story work, ensure tasks cover:
 - [x] T011 Configure Encore secrets for local development (MEXCApiKey, MEXCSecretKey) - already configured in Encore vault
 - [x] T012 [P] Set up environment variables for frontend in `frontend/.env.local` (NEXT_PUBLIC_API_BASE_URL)
 - [x] T013 [P] Install and configure shadcn/ui components in `frontend/components/ui/`
-- [ ] T014 Verify Encore app runs locally (`encore run`) and dashboard is accessible
+- [x] T014 Verify Encore app runs locally (`encore run`) and dashboard is accessible
 
-**Checkpoint**: Foundation ready - user story implementation can now begin in parallel
+**Checkpoint**: ✅ Foundation ready - user story implementation can now begin in parallel
 
 ---
 
