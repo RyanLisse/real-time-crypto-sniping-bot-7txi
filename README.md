@@ -44,8 +44,14 @@ Monitor new MEXC spot listings in near real-time via WebSocket with a live dashb
 - Performance indexes on `created_at`
 
 **Tech Stack:**
-- Encore.ts (backend framework)
-- Bun (runtime & package manager)
+- **Backend**: Encore.ts (serverless microservices)
+- **Frontend**: Next.js 16 with App Router  
+- **Database**: PostgreSQL (via Neon)
+- **Exchange**: MEXC (live trading)
+- **Testing**: Vitest (unit/component), Playwright (E2E)
+- **Styling**: Tailwind CSS + shadcn/ui
+- **State**: TanStack Query (caching, optimistic updates)
+- **Observability**: Structured logging, Encore metrics
 - WebSocket (`ws` library)
 - TypeScript (strict mode)
 
@@ -71,29 +77,27 @@ Monitor new MEXC spot listings in near real-time via WebSocket with a live dashb
 ## 🚀 Quick Start
 
 ### Prerequisites
+- Bun 1.x or later
+- Encore CLI ([install](https://encore.dev/docs/install))
+- MEXC account (for live trading)
 
-- **Bun** 1.x or later ([install](https://bun.sh))
-- **Encore CLI** ([install](https://encore.dev/docs/install))
-- **Node.js** 18+ (for tooling)
-- **Git** (version control)
-
-### 1. Clone & Install
+### Installation
 
 ```bash
 # Clone repository
-git clone <repo-url>
+git clone <repo>
 cd real-time-crypto-sniping-bot-7txi
 
 # Install backend dependencies
 cd backend
 bun install
 
-# Install frontend dependencies
+# Install frontend dependencies  
 cd ../frontend
 bun install
 ```
 
-### 2. Run Database Migrations
+### Configuration (Optional - for live trading)
 
 ```bash
 cd backend
@@ -262,22 +266,22 @@ encore db conn-uri            # Get connection string
 
 ## 🔮 Roadmap
 
-### ✅ User Story 1: Monitor New Listings (Complete)
+### User Story 1: Monitor New Listings (Complete)
 - Real-time WebSocket monitoring
 - Dashboard with listings table
 - Monitor controls (start/stop)
 
-### 🚧 User Story 2: Safe Auto-Trade Sniping (Planned)
+### User Story 2: Safe Auto-Trade Sniping (Complete)
 - Trade execution engine with <100ms latency
 - Risk checks and position sizing
 - Dry-run mode for testing
 
-### 📋 User Story 3: Dashboard Configuration (Planned)
+### User Story 3: Dashboard Configuration (Planned)
 - Risk manager service
 - Configuration UI for trading parameters
 - Real-time risk metrics
 
-### 📈 User Story 4: Analytics (Planned)
+### User Story 4: Analytics (Planned)
 - Performance metrics and charts
 - Trade history analysis
 - Win rate and P&L tracking
