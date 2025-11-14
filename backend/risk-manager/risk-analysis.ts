@@ -45,6 +45,16 @@ export const getRiskMetrics = api<void, RiskMetrics>(
       ? (tradeStatsResult.executed / tradeStatsResult.total) * 100
       : 0;
 
+    // Calculate daily P&L from closed positions today
+    const dailyPnLResult = await db.queryRow<{ total_pnl: number | null }>`
+      SELECT SUM(CAST(metadata->>'realized_pnl' AS DOUBLE PRECISION)) as total_pnl
+      FROM trades
+      WHERE side = 'sell'
+        AND status = 'executed'
+        AND DATE(executed_at) = CURRENT_DATE
+        AND metadata->>'realized_pnl' IS NOT NULL
+    `;
+
     return {
       totalExposure: totalExposureResult?.total || 0,
       activePositions: activePositionsResult?.count || 0,
@@ -52,7 +62,7 @@ export const getRiskMetrics = api<void, RiskMetrics>(
       avgLatency: tradeStatsResult?.avg_latency || 0,
       failedTrades: tradeStatsResult?.failed || 0,
       totalTrades: tradeStatsResult?.total || 0,
-      dailyPnL: 0,
+      dailyPnL: dailyPnLResult?.total_pnl || 0,
     };
   }
 );

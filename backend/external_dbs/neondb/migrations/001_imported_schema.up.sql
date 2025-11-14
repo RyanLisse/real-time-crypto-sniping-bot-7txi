@@ -1,0 +1,3 @@
+-- Placeholder migration for imported schema
+-- The actual schema is defined in 002_crypto_bot_schema.up.sql
+-- This file is intentionally minimal to reserve migration number 001
