@@ -1,5 +1,6 @@
 import log from "encore.dev/log";
 import { BotDB } from "../db/db";
+import { recordRiskRejection } from "../metrics/trade-metrics";
 
 /**
  * Risk check result
@@ -45,6 +46,7 @@ export async function checkTradeRisk(params: TradeParams): Promise<RiskCheckResu
     // Check 1: Auto-trade must be enabled for live trades
     if (!config.auto_trade) {
       log.info("Trade rejected: auto_trade disabled (dry-run mode)", { symbol: params.symbol });
+      recordRiskRejection("auto_trade_disabled");
       return {
         approved: false,
         reason: "auto_trade_disabled",
@@ -58,6 +60,7 @@ export async function checkTradeRisk(params: TradeParams): Promise<RiskCheckResu
         quoteQty: params.quoteQty,
         maxTradeUsdt: config.max_trade_usdt,
       });
+      recordRiskRejection("exceeds_max_trade_usdt");
       return {
         approved: false,
         reason: "exceeds_max_trade_usdt",
@@ -82,6 +85,7 @@ export async function checkTradeRisk(params: TradeParams): Promise<RiskCheckResu
         newTotal: newTotalExposure,
         maxPositionUsdt: config.max_position_usdt,
       });
+      recordRiskRejection("exceeds_max_position_usdt");
       return {
         approved: false,
         reason: "exceeds_max_position_usdt",

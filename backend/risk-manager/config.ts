@@ -1,5 +1,7 @@
 import { api } from "encore.dev/api";
+import log from "encore.dev/log";
 import { BotDB } from "../db/db";
+import { recordAutoTradeMode } from "../metrics/trade-metrics";
 
 /**
  * Trade configuration matching User Story 2 spec
@@ -33,6 +35,11 @@ export const getConfig = api<void, TradingConfig>(
       throw new Error("Config not found - run database migrations");
     }
 
+    log.info("Configuration retrieved", { config });
+  
+    // Update auto-trade mode metric
+    recordAutoTradeMode(config.auto_trade);
+  
     return {
       maxTradeUsdt: config.max_trade_usdt,
       maxPositionUsdt: config.max_position_usdt,

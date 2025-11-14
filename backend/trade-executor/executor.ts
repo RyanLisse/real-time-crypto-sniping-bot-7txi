@@ -3,6 +3,7 @@ import log from "encore.dev/log";
 import { BotDB } from "../db/db";
 import { checkTradeRisk } from "./risk-check";
 import { placeMarketBuyOrder } from "./mexc-client";
+import { recordTradeExecution } from "../metrics/trade-metrics";
 import type { TradeRequest, TradeResponse } from "./types";
 
 /**
@@ -83,6 +84,9 @@ export const executeTrade = api<TradeRequest, TradeResponse>(
           latencyMs,
         });
 
+        // Record metrics
+        recordTradeExecution("dry-run", "filled", latencyMs);
+
         return {
           tradeId: result?.id || 0,
           status: "filled",
@@ -127,6 +131,9 @@ export const executeTrade = api<TradeRequest, TradeResponse>(
           latencyMs,
         });
 
+        // Record metrics
+        recordTradeExecution("live", "filled", latencyMs);
+
         return {
           tradeId: result?.id || 0,
           orderId: mexcResponse.orderId,
@@ -158,6 +165,9 @@ export const executeTrade = api<TradeRequest, TradeResponse>(
           error: mexcError,
           latencyMs,
         });
+
+        // Record metrics
+        recordTradeExecution("live", "failed", latencyMs);
 
         return {
           tradeId: result?.id || 0,
