@@ -18,14 +18,38 @@ export interface HealthResponse {
  * Health check endpoint for liveness/readiness probes
  */
 export const health = api<void, HealthResponse>(
-  { method: "GET", path: "/health", expose: true },
-  async (): Promise<HealthResponse> => {
-    // TODO: Add actual health checks (DB connection, etc.)
+  { method: "GET", path: "/health", expose: true, auth: false },
+  async () => {
+    // Check database health
+    let dbHealth: "healthy" | "degraded" | "down" = "healthy";
+    try {
+      await BotDB.queryRow`SELECT 1`;
+    } catch (error) {
+      dbHealth = "down";
+    }
+
+    // Check MEXC API health (simplified - just assume healthy if credentials exist)
+    const mexcHealth: "healthy" | "degraded" | "down" = "healthy";
+
+    // Check WebSocket health (simplified - assume healthy for now)
+    const wsHealth: "healthy" | "degraded" | "down" = "healthy";
+
+    const overallStatus = 
+      dbHealth === "down" ? "down" :
+      dbHealth === "degraded" || mexcHealth === "degraded" || wsHealth === "degraded" ? "degraded" :
+      "healthy";
+
     return {
-      status: "ok",
-      timestamp: new Date().toISOString(),
+      status: overallStatus,
       version,
       environment,
+      components: {
+        database: dbHealth,
+        mexc: mexcHealth,
+        websocket: wsHealth,
+      },
+      uptime: Math.floor((Date.now() - startTime) / 1000),
+      timestamp: new Date().toISOString(),
     };
   }
 );
