@@ -2,6 +2,7 @@ import { api } from "encore.dev/api";
 import log from "encore.dev/log";
 import { BotDB } from "../db/db";
 import { checkTradeRisk } from "./risk-check";
+import { placeMarketBuyOrder } from "./mexc-client";
 import type { TradeRequest, TradeResponse } from "./types";
 
 /**
@@ -90,29 +91,82 @@ export const executeTrade = api<TradeRequest, TradeResponse>(
         };
       }
 
-      // Step 3: Live execution (placeholder - MEXC client integration needed)
-      // TODO: Integrate with mexcTradingClient.placeOrder()
-      const latencyMs = Math.round(performance.now() - startTime);
-      
-      log.warn("Live trading not yet implemented - executing as dry-run", { symbol: req.symbol });
-      
-      const result = await BotDB.queryRow<{ id: number }>`
-        INSERT INTO trades (
-          symbol, side, quote_qty, latency_ms, mode, status, error_reason
-        )
-        VALUES (
-          ${req.symbol}, ${req.side.toUpperCase()}, ${req.quoteQty},
-          ${latencyMs}, 'dry-run', 'filled', 'live_trading_not_implemented'
-        )
-        RETURNING id
-      `;
+      // Step 3: Live execution with MEXC
+      try {
+        log.info("Executing live trade on MEXC", {
+          symbol: req.symbol,
+          quoteQty: req.quoteQty,
+        });
 
-      return {
-        tradeId: result?.id || 0,
-        status: "filled",
-        mode: "dry-run",
-        latencyMs,
-      };
+        // T097: Call MEXC client
+        const mexcResponse = await placeMarketBuyOrder({
+          symbol: req.symbol,
+          quoteOrderQty: req.quoteQty,
+        });
+
+        const latencyMs = Math.round(performance.now() - startTime);
+
+        // T100: Store exchange_order_id and base_qty
+        const result = await BotDB.queryRow<{ id: number }>`
+          INSERT INTO trades (
+            symbol, side, quote_qty, base_qty, latency_ms, mode, status, exchange_order_id
+          )
+          VALUES (
+            ${req.symbol}, ${req.side.toUpperCase()}, ${req.quoteQty},
+            ${parseFloat(mexcResponse.executedQty)}, ${latencyMs}, 'live', 'filled',
+            ${mexcResponse.orderId}
+          )
+          RETURNING id
+        `;
+
+        log.info("Live trade executed successfully", {
+          metric: "trade_live_success",
+          tradeId: result?.id,
+          orderId: mexcResponse.orderId,
+          baseQty: mexcResponse.executedQty,
+          latencyMs,
+        });
+
+        return {
+          tradeId: result?.id || 0,
+          orderId: mexcResponse.orderId,
+          status: "filled",
+          mode: "live",
+          baseQty: parseFloat(mexcResponse.executedQty),
+          latencyMs,
+        };
+      } catch (mexcError) {
+        // T099: Handle MEXC errors
+        const latencyMs = Math.round(performance.now() - startTime);
+        const errorReason = mexcError instanceof Error ? mexcError.message : String(mexcError);
+
+        const result = await BotDB.queryRow<{ id: number }>`
+          INSERT INTO trades (
+            symbol, side, quote_qty, latency_ms, mode, status, error_reason
+          )
+          VALUES (
+            ${req.symbol}, ${req.side.toUpperCase()}, ${req.quoteQty},
+            ${latencyMs}, 'live', 'failed', ${errorReason}
+          )
+          RETURNING id
+        `;
+
+        log.error("Live trade execution failed", {
+          metric: "trade_live_failed",
+          tradeId: result?.id,
+          symbol: req.symbol,
+          error: mexcError,
+          latencyMs,
+        });
+
+        return {
+          tradeId: result?.id || 0,
+          status: "failed",
+          mode: "live",
+          latencyMs,
+          errorReason,
+        };
+      }
     } catch (error) {
       const latencyMs = Math.round(performance.now() - startTime);
       const errorReason = error instanceof Error ? error.message : String(error);

@@ -1,8 +1,9 @@
-# Quickstart: MEXC Sniper Bot Development Setup
+# Quickstart: MEXC Sniper Bot Core System
 
-**Feature**: User Story 1 - Monitor New Listings  
+**Feature**: User Stories 1 & 2 - Monitor & Trade  
 **Branch**: `001-sniper-bot-core`  
-**Date**: 2025-11-14
+**Date**: 2025-11-14  
+**Status**: User Story 1 Complete | User Story 2 Phase 2
 
 ---
 
