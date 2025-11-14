@@ -134,7 +134,7 @@ Given historical data, stakeholders can answer "how fast did we trade", "how oft
 - Missing or misconfigured secrets/API keys.  
 - Operator configures invalid risk parameters (negative amounts, contradictory limits).  
 - Extremely illiquid or mispriced listings (e.g., sudden trading halts).  
-- [NEEDS CLARIFICATION: Whether voice/chat-driven trading interface is in scope for the first release or reserved for a later phase.]
+- Voice/chat-driven trading interface is out of scope for MVP and reserved for Phase 2 after automated monitoring and trading are stable.
 
 ---
 
@@ -156,10 +156,10 @@ This can be demonstrated in a non-production environment using test keys or a si
 - All order execution must respect configured risk limits (`max_trade_usdt`, `max_position_usdt`, global toggles for trading vs dry-run).  
 - No order may be sent without valid configuration and secrets; missing inputs must fail fast with explicit errors.  
 - Auto-trade must default to **off** unless explicitly enabled by the operator.  
-- Large trades above a configurable threshold may require additional confirmation or be forced into dry-run.  
+- Large trades above $500 USDT threshold require dashboard confirmation before execution; unconfirmed high-value trades execute in dry-run mode only and log "high_value_pending" status.  
 - Rate limits and circuit breakers must prevent hitting exchange-imposed limits or causing bans.  
 - Every trade and rejected attempt must be recorded with reason codes for later audit.  
-- [NEEDS CLARIFICATION: Exact thresholds for "high-value trade" confirmations and whether MFA/secondary confirmation is required.]
+- MFA/secondary confirmation is not required for MVP; dashboard toggle confirmation is sufficient.
 
 ---
 
@@ -177,7 +177,7 @@ This can be demonstrated in a non-production environment using test keys or a si
   - Risk-check decisions and trade outcomes.  
   - Configuration changes and operator actions.  
 - Provide metrics suitable for dashboards (e.g., counts, failure rates, latency histograms).  
-- [NEEDS CLARIFICATION: Exact telemetry backend(s) and retention periods required by the business.]
+- Telemetry backend: Encore built-in Prometheus metrics plus structured JSON logs to stdout with 30-day retention via hosting provider's log aggregation.
 
 ---
 

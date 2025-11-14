@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain (3 general clarifications pending, User Story 1 fully clarified)
+- [x] No [NEEDS CLARIFICATION] markers remain (all clarifications resolved as of 2025-11-14)
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -53,13 +53,13 @@ The following gaps for User Story 1 (Monitor New Listings in Near Real-Time) hav
    - Decision: `mexc_websocket`, `mexc_rest_api`, `test_injection`
    - Integrated into: Listing entity definition, Observability section
 
-## Remaining General Clarifications
+## General Clarifications (✅ RESOLVED 2025-11-14)
 
-The spec still contains 3 [NEEDS CLARIFICATION] markers for later phases (not blocking User Story 1 implementation):
+All 3 previously pending clarifications have been resolved:
 
-1. **Voice/Chat Interface Scope** (Edge Cases section) - Priority: P3 feature scope
-2. **High-Value Trade Thresholds** (Risk & Guardrail Requirements) - User Story 2 detail
-3. **Telemetry Backend & Retention** (Observability & Latency Targets) - Infrastructure decision
+1. **Voice/Chat Interface Scope** ✅ - Out of scope for MVP, reserved for Phase 2
+2. **High-Value Trade Thresholds** ✅ - $500 USDT threshold, dashboard confirmation required, no MFA for MVP
+3. **Telemetry Backend & Retention** ✅ - Encore Prometheus + JSON logs to stdout, 30-day retention
 
 ## Notes
 
