@@ -1,4 +1,5 @@
 import { api } from "encore.dev/api";
+import { BotDB } from "../db/db";
 
 const version = process.env.APP_VERSION ?? "0.1.0";
 const environment = process.env.NODE_ENV ?? "development";
@@ -6,16 +7,25 @@ const environment = process.env.NODE_ENV ?? "development";
 /**
  * Health response matching API contract
  */
-export interface HealthResponse {
-  status: "ok" | "degraded" | "error";
+interface HealthResponse {
+  status: string;
+  version: string;
+  environment: string;
+  components: {
+    database: "healthy" | "degraded" | "down";
+    mexc: "healthy" | "degraded" | "down";
+    websocket: "healthy" | "degraded" | "down";
+  };
+  uptime: number;
   timestamp: string;
-  version?: string;
-  environment?: string;
 }
+
+const startTime = Date.now();
 
 /**
  * GET /health
- * Health check endpoint for liveness/readiness probes
+ * Enhanced health check endpoint with component status
+ * User Story 3: System health monitoring
  */
 export const health = api<void, HealthResponse>(
   { method: "GET", path: "/health", expose: true, auth: false },
@@ -28,10 +38,10 @@ export const health = api<void, HealthResponse>(
       dbHealth = "down";
     }
 
-    // Check MEXC API health (simplified - just assume healthy if credentials exist)
+    // Check MEXC API health (simplified - assume healthy)
     const mexcHealth: "healthy" | "degraded" | "down" = "healthy";
 
-    // Check WebSocket health (simplified - assume healthy for now)
+    // Check WebSocket health (simplified - assume healthy)
     const wsHealth: "healthy" | "degraded" | "down" = "healthy";
 
     const overallStatus = 

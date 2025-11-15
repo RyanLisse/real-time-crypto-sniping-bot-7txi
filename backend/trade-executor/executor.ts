@@ -2,7 +2,7 @@ import { api } from "encore.dev/api";
 import log from "encore.dev/log";
 import { BotDB } from "../db/db";
 import { checkTradeRisk } from "./risk-check";
-import { placeMarketBuyOrder } from "./mexc-client";
+import { placeMarketBuyOrder, ensureMEXCCredentialsValid } from "./mexc-client";
 import { recordTradeExecution } from "../metrics/trade-metrics";
 import type { TradeRequest, TradeResponse } from "./types";
 
@@ -97,6 +97,9 @@ export const executeTrade = api<TradeRequest, TradeResponse>(
 
       // Step 3: Live execution with MEXC
       try {
+        // Ensure MEXC credentials are valid before attempting live trading
+        await ensureMEXCCredentialsValid();
+
         log.info("Executing live trade on MEXC", {
           symbol: req.symbol,
           quoteQty: req.quoteQty,

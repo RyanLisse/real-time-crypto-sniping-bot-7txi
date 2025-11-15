@@ -47,6 +47,14 @@ export const autoTradeModeEnabled = new Metric<{}>("auto_trade_mode_enabled", {
 });
 
 /**
+ * T149: Counter for configuration updates
+ */
+export const configUpdatesTotal = new Metric<{}>("config_updates_total", {
+  type: "counter",
+  description: "Total number of trade configuration updates",
+});
+
+/**
  * T150: Counter for MEXC API errors
  */
 export const mexcApiErrors = new Metric<{ error_type: string }>("mexc_api_errors_total", {
@@ -81,4 +89,11 @@ export function recordAutoTradeMode(enabled: boolean) {
  */
 export function recordMEXCError(errorType: string) {
   mexcApiErrors.add(1, { error_type: errorType });
+}
+
+/**
+ * Helper function to record configuration updates
+ */
+export function recordConfigUpdate() {
+  configUpdatesTotal.add(1, {});
 }

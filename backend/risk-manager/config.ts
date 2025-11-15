@@ -1,7 +1,7 @@
 import { api } from "encore.dev/api";
 import log from "encore.dev/log";
 import { BotDB } from "../db/db";
-import { recordAutoTradeMode } from "../metrics/trade-metrics";
+import { recordAutoTradeMode, recordConfigUpdate } from "../metrics/trade-metrics";
 
 /**
  * Trade configuration matching User Story 2 spec
@@ -101,6 +101,9 @@ export const updateConfig = api<UpdateConfigRequest, TradingConfig>(
       // Note: Using template literals for dynamic SQL with validated inputs
       const sql = `UPDATE trade_config SET ${updates.join(", ")}, updated_at = NOW() WHERE id = 1`;
       await BotDB.rawExec(sql, ...params);
+
+      // Record configuration update metric
+      recordConfigUpdate();
     }
 
     // Return updated config

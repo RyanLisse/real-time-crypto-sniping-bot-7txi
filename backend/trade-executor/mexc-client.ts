@@ -12,6 +12,8 @@ const MEXCSecretKey = secret("MEXCSecretKey");
  * MEXC API Base URL
  */
 const MEXC_API_BASE = "https://api.mexc.com";
+const MAX_ORDER_RETRIES = 3;
+const INITIAL_RETRY_DELAY_MS = 500;
 
 /**
  * MEXC order side
@@ -94,6 +96,48 @@ async function getServerTime(): Promise<number> {
   }
 }
 
+async function sendOrderWithRetry(
+  url: string,
+  options: RequestInit,
+  symbol: string,
+  quoteOrderQty: number
+): Promise<Response> {
+  let attempt = 0;
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      return await fetch(url, options);
+    } catch (error) {
+      attempt += 1;
+
+      if (attempt >= MAX_ORDER_RETRIES) {
+        log.error("MEXC order request failed after retries", {
+          metric: "mexc_order_failed",
+          symbol,
+          quoteOrderQty,
+          attempt,
+          error,
+        });
+        throw error;
+      }
+
+      const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+
+      log.warn("MEXC order request failed, retrying", {
+        metric: "mexc_order_retry",
+        symbol,
+        quoteOrderQty,
+        attempt,
+        delayMs: delay,
+        error,
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+}
+
 /**
  * Place a market buy order on MEXC using quoteOrderQty
  * T094: Market buy order with quoteOrderQty
@@ -130,14 +174,14 @@ export async function placeMarketBuyOrder(
       quoteOrderQty: request.quoteOrderQty,
     });
 
-    // Make API request
-    const response = await fetch(`${MEXC_API_BASE}/api/v3/order?${queryString}`, {
+    // Make API request with retry for transient failures
+    const response = await sendOrderWithRetry(`${MEXC_API_BASE}/api/v3/order?${queryString}`, {
       method: "POST",
       headers: {
         "X-MEXC-APIKEY": MEXCApiKey(),
         "Content-Type": "application/json",
       },
-    });
+    }, request.symbol, request.quoteOrderQty);
 
     const latencyMs = Math.round(performance.now() - startTime);
 
@@ -219,5 +263,19 @@ export async function validateMEXCCredentials(): Promise<boolean> {
   } catch (error) {
     log.error("Failed to validate MEXC credentials", { error });
     return false;
+  }
+}
+
+let cachedCredentialValidation: Promise<boolean> | null = null;
+
+export async function ensureMEXCCredentialsValid(): Promise<void> {
+  if (!cachedCredentialValidation) {
+    cachedCredentialValidation = validateMEXCCredentials();
+  }
+
+  const isValid = await cachedCredentialValidation;
+
+  if (!isValid) {
+    throw new Error("MEXC API credentials are not configured or invalid; live trading is disabled");
   }
 }
