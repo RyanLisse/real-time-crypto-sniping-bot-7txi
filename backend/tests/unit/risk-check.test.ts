@@ -77,13 +77,14 @@ describe("Risk Check Logic", () => {
     it("should provide specific rejection reasons", () => {
       const reasons = [
         "auto_trade_disabled",
+        "exceeds_global_max_trade_usdt",
         "exceeds_max_trade_usdt",
         "exceeds_max_position_usdt",
         "trade_config_missing",
         "risk_check_error",
       ];
 
-      expect(reasons.length).toBe(5);
+      expect(reasons.length).toBe(6);
       reasons.forEach(reason => {
         expect(typeof reason).toBe("string");
         expect(reason.length).toBeGreaterThan(0);

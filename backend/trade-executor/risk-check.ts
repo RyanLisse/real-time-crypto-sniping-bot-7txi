@@ -2,6 +2,8 @@ import log from "encore.dev/log";
 import { BotDB } from "../db/db";
 import { recordRiskRejection } from "../metrics/trade-metrics";
 
+const GLOBAL_MAX_TRADE_USDT = 10;
+
 /**
  * Risk check result
  */
@@ -43,7 +45,21 @@ export async function checkTradeRisk(params: TradeParams): Promise<RiskCheckResu
       };
     }
 
-    // Check 1: Auto-trade must be enabled for live trades
+    // Check 1: Global per-trade hard cap (safety net for all trades)
+    if (params.quoteQty > GLOBAL_MAX_TRADE_USDT) {
+      log.info("Trade rejected: exceeds global max_trade_usdt", {
+        symbol: params.symbol,
+        quoteQty: params.quoteQty,
+        globalMaxTradeUsdt: GLOBAL_MAX_TRADE_USDT,
+      });
+      recordRiskRejection("exceeds_global_max_trade_usdt");
+      return {
+        approved: false,
+        reason: "exceeds_global_max_trade_usdt",
+      };
+    }
+
+    // Check 2: Auto-trade must be enabled for live trades
     if (!config.auto_trade) {
       log.info("Trade rejected: auto_trade disabled (dry-run mode)", { symbol: params.symbol });
       recordRiskRejection("auto_trade_disabled");
@@ -53,7 +69,7 @@ export async function checkTradeRisk(params: TradeParams): Promise<RiskCheckResu
       };
     }
 
-    // Check 2: Single trade limit
+    // Check 3: Single trade limit (config-driven)
     if (params.quoteQty > config.max_trade_usdt) {
       log.info("Trade rejected: exceeds max_trade_usdt", {
         symbol: params.symbol,
@@ -67,7 +83,7 @@ export async function checkTradeRisk(params: TradeParams): Promise<RiskCheckResu
       };
     }
 
-    // Check 3: Total position limit
+    // Check 4: Total position limit (24h rolling exposure)
     const totalExposure = await BotDB.queryRow<{ total: number }>`
       SELECT COALESCE(SUM(quote_qty), 0) as total
       FROM trades
