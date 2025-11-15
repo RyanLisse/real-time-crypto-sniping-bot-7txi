@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { TradesTable } from "./components/TradesTable";
+import { TestTradeButton } from "./components/TestTradeButton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 /**
@@ -17,11 +18,14 @@ export default function TradesPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Recent Trades</CardTitle>
-          <CardDescription>
-            Execution history with status, mode, and latency tracking
-          </CardDescription>
+        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <CardTitle>Recent Trades</CardTitle>
+            <CardDescription>
+              Execution history with status, mode, and latency tracking
+            </CardDescription>
+          </div>
+          <TestTradeButton />
         </CardHeader>
         <CardContent>
           <Suspense fallback={<div>Loading trades...</div>}>
