@@ -139,4 +139,29 @@ test.describe("Trades Table Workflow", () => {
     // Table should still be visible
     await expect(page.getByText("Trade History")).toBeVisible();
   });
+
+  test("should execute test trade and show it in trades table", async ({ page }) => {
+    // Ensure the Test Trade button is visible
+    const testTradeButton = page.locator('button:has-text("Test Trade")');
+    await expect(testTradeButton).toBeVisible();
+
+    const rowsLocator = page.locator("table tbody tr");
+    const initialRowCount = await rowsLocator.count();
+
+    // Click the Test Trade button
+    await testTradeButton.click();
+
+    // Wait for a toast indicating the outcome (executed, rejected, failed, or error)
+    await expect(
+      page.getByText(/Test trade (executed|rejected|failed|error)/i)
+    ).toBeVisible();
+
+    // Wait for trades table to show a row with the test symbol
+    await expect(page.locator("table")).toBeVisible();
+    await expect(rowsLocator).toContainText("TESTUSDT");
+
+    // Sanity check: row count should not decrease
+    const finalRowCount = await rowsLocator.count();
+    expect(finalRowCount).toBeGreaterThanOrEqual(initialRowCount);
+  });
 });
